@@ -1,9 +1,9 @@
-import Vuex from 'vuex'
+import { Store } from 'vuex'
 import Cookie from 'js-cookie'
 import axios from 'axios'
 
 const createStore = () => {
-  return new Vuex.Store({
+  return new Store({
     state: {
       authToken: '',
       error: '',
@@ -81,14 +81,11 @@ const createStore = () => {
       },
       // call this everytime we refresh the page (on the middleware)
       initAuth(vuexContext) {
-        const token = localStorage.getItem('token')
-        const expirationDate = localStorage.getItem('tokenExpiration')
+        const token = Cookie.get('jwt')
 
-        if (new Date() > expirationDate || !token) {
-          return
+        if (token) {
+          vuexContext.commit('setUserToken', token)
         }
-
-        vuexContext.commit('setUserToken', token)
       },
 
       async logoutUser(vuexContext) {

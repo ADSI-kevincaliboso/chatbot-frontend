@@ -9,5 +9,6 @@ export default {
   components: {
     AuthForm,
   },
+  middleware: ['checkAuth'],
 }
 </script>

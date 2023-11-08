@@ -1,6 +1,6 @@
 <template>
   <input
-    type="text"
+    :type="type"
     :value="value"
     @input="$emit('input', $event.target.value)"
   />
@@ -13,6 +13,10 @@ export default {
     value: {
       type: String,
       required: true,
+    },
+    type: {
+      type: String,
+      default: 'text',
     },
   },
 }

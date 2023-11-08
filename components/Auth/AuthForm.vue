@@ -12,7 +12,7 @@
 
       <div>
         <label for="password">Password</label>
-        <TextInput id="password" v-model="password" />
+        <TextInput id="password" v-model="password" type="password" />
       </div>
 
       <button type="submit">{{ isLogin ? 'Login' : 'Signup' }}</button>
@@ -51,6 +51,10 @@ export default {
         password: this.password,
         isLogin: this.isLogin,
       }
+
+      this.email = ''
+      this.name = ''
+      this.password = ''
 
       await this.$store.dispatch('authUser', authData).then((res) => {
         if (!res) {
