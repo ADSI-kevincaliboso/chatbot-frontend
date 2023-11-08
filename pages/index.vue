@@ -1,13 +1,13 @@
 <template>
-  <LoginForm />
+  <AuthForm />
 </template>
 
 <script>
-import LoginForm from '~/components/Auth/LoginForm.vue'
+import AuthForm from '~/components/Auth/AuthForm.vue'
 export default {
   name: 'LoginPage',
   components: {
-    LoginForm,
+    AuthForm,
   },
 }
 </script>
