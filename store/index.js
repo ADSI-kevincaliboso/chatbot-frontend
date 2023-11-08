@@ -90,10 +90,22 @@ const createStore = () => {
 
         vuexContext.commit('setUserToken', token)
       },
+
+      async logoutUser(vuexContext) {
+        // logout user from backend
+        await axios.post(`${process.env.baseUrl}/logout`, null, {
+          headers: {
+            Authorization: `Bearer ${this.state.authToken}`,
+          },
+        })
+        // clear cookies also
+        vuexContext.commit('clearToken')
+        Cookie.remove('jwt')
+      },
     },
     getters: {
       isAuth(state) {
-        return state.authToken != null
+        return state.authToken !== ''
       },
       error(state) {
         return state.error
