@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-return */
 import { Store } from 'vuex'
 import Cookie from 'js-cookie'
 import axios from 'axios'
@@ -80,10 +81,17 @@ const createStore = () => {
         }
       },
       // call this everytime we refresh the page (on the middleware)
-      initAuth(vuexContext) {
-        const token = Cookie.get('jwt')
+      initAuth(vuexContext, req) {
+        if (req) {
+          if (!req.headers.cookie) {
+            return
+          }
 
-        if (token) {
+          const token = req.headers.cookie
+            .split(';')
+            .find((value) => value.trim().startsWith('jwt='))
+            .split('=')[1]
+
           vuexContext.commit('setUserToken', token)
         }
       },
