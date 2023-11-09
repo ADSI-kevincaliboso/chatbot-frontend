@@ -8,16 +8,30 @@ const createStore = () => {
     state: {
       authToken: '',
       error: '',
+      chatroom: null,
+      chatMessages: [],
     },
     mutations: {
       setUserToken(state, token) {
         state.authToken = token
       },
-      clearToken(state) {
+      clearStore(state) {
         state.authToken = ''
+        state.error = ''
+        state.chatroom = null
+        state.chatMessages = []
       },
       setError(state, error) {
         state.error = error
+      },
+      setChatRoom(state, id) {
+        state.chatroom = id
+      },
+      setMessages(state, messages) {
+        state.chatMessages = []
+        messages.forEach((message) => {
+          state.chatMessages.push(message)
+        })
       },
     },
     actions: {
@@ -44,6 +58,8 @@ const createStore = () => {
                 vuexContext.commit('setUserToken', user.token)
                 // set to cookie using js-cookie
                 Cookie.set('jwt', user.token)
+                Cookie.set('chatroomId', user.chatroomId)
+                vuexContext.commit('setChatRoom', user.chatroomId)
 
                 // return user type for routing purposes outside
                 return user.data.user_type
@@ -66,8 +82,10 @@ const createStore = () => {
               .then((res) => {
                 const user = res.data
                 vuexContext.commit('setUserToken', user.token)
+                vuexContext.commit('setChatRoom', user.chatroomId)
 
                 Cookie.set('jwt', user.token)
+                Cookie.set('chatroomId', user.chatroomId)
 
                 return user.data.user_type
               })
@@ -92,7 +110,12 @@ const createStore = () => {
             .find((value) => value.trim().startsWith('jwt='))
             .split('=')[1]
 
+          const chatroomId = req.headers.cookie
+            .split(';')
+            .find((value) => value.trim().startsWith('chatroomId='))
+            .split('=')[1]
           vuexContext.commit('setUserToken', token)
+          vuexContext.commit('setChatRoom', chatroomId)
         }
       },
 
@@ -104,8 +127,31 @@ const createStore = () => {
           },
         })
         // clear cookies also
-        vuexContext.commit('clearToken')
+        vuexContext.commit('clearStore')
         Cookie.remove('jwt')
+        Cookie.remove('messages')
+        Cookie.remove('chatroomId')
+      },
+
+      async createChatRoom(vuexContext) {
+        await axios
+          .post(`${process.env.baseUrl}/chat-rooms`, null, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${this.state.authToken}`,
+            },
+          })
+          .then((res) => {
+            vuexContext.commit('setChatRoom', res.data.id)
+          })
+      },
+
+      saveMessages(vuexContext, messages) {
+        vuexContext.commit('setMessages', messages)
+      },
+
+      addMessage(vuexContext, message) {
+        vuexContext.state.chatMessages.push(message)
       },
     },
     getters: {
@@ -114,6 +160,15 @@ const createStore = () => {
       },
       error(state) {
         return state.error
+      },
+      chatroom(state) {
+        return state.chatroom
+      },
+      token(state) {
+        return state.authToken
+      },
+      messages(state) {
+        return state.chatMessages
       },
     },
   })

@@ -27,6 +27,19 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
+    [
+      '@nuxtjs/laravel-echo',
+      {
+        broadcaster: 'pusher',
+        key: '4995912b0bbee1bb0720',
+        cluster: 'ap1',
+        encrypted: false,
+        wsHost: process.env.WEBSOCKET_BASE_URL,
+        wsPort: 6001,
+        disableStats: true,
+        authEndpoint: 'http://localhost:8000' + '/broadcasting/auth',
+      },
+    ],
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -39,6 +52,12 @@ export default {
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: '/',
+  },
+
+  echo: {
+    authModule: true,
+    connectOnLogin: true,
+    disconnectOnLogout: true,
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
