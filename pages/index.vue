@@ -1,3 +1,4 @@
+<!-- eslint-disable no-lonely-if -->
 <template>
   <div>
     <form @submit.prevent="authUser">
@@ -34,7 +35,6 @@ export default {
   components: {
     TextInput,
   },
-  middleware: ['checkAuth', 'auth'],
   data() {
     return {
       email: '',
@@ -45,7 +45,6 @@ export default {
     }
   },
   methods: {
-    // eslint-disable-next-line require-await
     authUser() {
       const authData = {
         name: this.name,
@@ -62,7 +61,12 @@ export default {
         if (!res) {
           this.error = this.$store.getters.error
         } else {
-          this.$router.push('/chatbot')
+          // eslint-disable-next-line no-lonely-if
+          if (res !== 'user') {
+            this.$router.push('/admin')
+          } else {
+            this.$router.push('/chatbot')
+          }
         }
       })
     },
