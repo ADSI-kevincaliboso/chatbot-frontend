@@ -21,22 +21,25 @@ export default {
   methods: {
     async sendMessage() {
       // send message then emit a event that the message is sent
-      const res = await axios.post(
-        `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message`,
-        {
-          message: this.message,
-        },
-        {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${this.$store.getters.token}`,
+      if (this.message) {
+        const res = await axios.post(
+          `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message`,
+          {
+            message: this.message,
           },
-        }
-      )
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${this.$store.getters.token}`,
+              'X-Socket-ID': this.$echo.socketId(),
+            },
+          }
+        )
 
-      this.message = ''
+        this.message = ''
 
-      this.$emit('messageSent', res.data.data)
+        this.$emit('messageSent', res.data.data)
+      }
     },
   },
 }
