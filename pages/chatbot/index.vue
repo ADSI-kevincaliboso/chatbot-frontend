@@ -4,7 +4,7 @@
 
     <div class="container">
       <ul>
-        <li class="list-item" v-for="message in messageList" :key="message.id">
+        <li v-for="message in messageList" :key="message.id" class="list-item">
           <b>{{ message.sender.name }}</b> : {{ message.message }}
         </li>
       </ul>
@@ -26,6 +26,7 @@ export default {
   comments: {
     ChatMessage,
   },
+  layout: 'auth',
   middleware: ['checkAuth', 'auth'],
   asyncData(context) {
     const id = context.store.getters.chatroom
@@ -39,7 +40,7 @@ export default {
       .then((res) => {
         context.store.dispatch('saveMessages', res.data.data)
       })
-      .catch((e) => console.log(e))
+      .catch((e) => new Error('Chatroom error'))
   },
   computed: {
     messageList() {
@@ -55,8 +56,10 @@ export default {
     },
     connect() {
       const roomId = this.$store.getters.chatroom
+
+      this.$echo.connector.options.auth.headers.Authorization = `Bearer ${this.$store.getters.token}`
       this.$echo.private(`chat.${roomId}`).listen('.message.new', (event) => {
-        this.messageList()
+        this.$store.dispatch('addMessage', event.chatMessage)
       })
     },
   },
@@ -67,7 +70,9 @@ export default {
 .container {
   border: 1px solid black;
   height: 400px;
-  overflow-y: scroll;
+  overflow: auto;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 li {

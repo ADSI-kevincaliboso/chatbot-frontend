@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="sidenav">
+  <div class="sidenav">
     <ul class="nav-list">
       <li class="nav-item">
         <button type="button" @click="logoutUser">Logout</button>
@@ -11,12 +11,6 @@
 <script>
 export default {
   name: 'TheNav',
-  props: {
-    show: {
-      type: Boolean,
-      default: false,
-    },
-  },
   methods: {
     logoutUser() {
       // destroy user keys and remove authtoken
