@@ -12,7 +12,7 @@ import axios from 'axios'
 export default {
   name: 'AdminDashboardPage',
   layout: 'auth',
-  middleware: ['checkAuth', 'auth'],
+  middleware: ['checkAuth', 'auth', 'isAdmin'],
   asyncData(context) {
     return axios
       .get(`${process.env.baseUrl}/chat-rooms/`, {
