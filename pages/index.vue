@@ -18,7 +18,7 @@
 
       <button type="submit">{{ isLogin ? 'Login' : 'Signup' }}</button>
       <button type="button" @click="isLogin = !isLogin">
-        switch to register
+        switch to {{ isLogin ? 'register' : 'login' }}
       </button>
     </form>
 
