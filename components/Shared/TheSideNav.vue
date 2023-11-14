@@ -26,18 +26,20 @@ export default {
     ChatRooms,
     UserTable,
   },
+  props: {
+    rooms: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
-      chatrooms: [],
       users: [],
       showChatRooms: false,
       showUserTable: false,
     }
   },
   computed: {
-    rooms() {
-      return this.chatrooms
-    },
     userList() {
       return this.users
     },
@@ -51,7 +53,8 @@ export default {
         },
       })
 
-      this.chatrooms = res.data
+      // this.chatrooms = res.data
+      this.$emit('chatroomRefresh', res.data)
       this.showChatRooms = true
       this.showUserTable = false
     },
