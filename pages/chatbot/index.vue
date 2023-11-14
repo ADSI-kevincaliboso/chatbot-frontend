@@ -1,10 +1,17 @@
 <template>
   <div>
-    <h1>chatbot</h1>
+    <button
+      v-if="this.$store.getters.userType === 'admin'"
+      @click="redirectToAdmin"
+    >
+      Go back to admin dashboard
+    </button>
+
+    <h1>Chatbot</h1>
 
     <div class="container">
       <ul>
-        <li v-for="message in messageList" :key="message.id" class="list-item">
+        <li v-for="message in messageList" :key="message.id" class="lst-item">
           <b>{{ message.sender.name }}</b> : {{ message.message }}
         </li>
       </ul>
@@ -47,7 +54,7 @@ export default {
       return this.$store.getters.messages
     },
   },
-  mounted() {
+  beforeMount() {
     this.connect()
   },
   methods: {
@@ -61,6 +68,10 @@ export default {
       this.$echo.private(`chat.${roomId}`).listen('.message.new', (event) => {
         this.$store.dispatch('addMessage', event.chatMessage)
       })
+    },
+    redirectToAdmin() {
+      this.$echo.leave(`chat.${this.$store.getters.chatroom}`)
+      this.$router.push('/admin')
     },
   },
 }

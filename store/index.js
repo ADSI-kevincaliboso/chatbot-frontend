@@ -173,6 +173,11 @@ const createStore = () => {
       addMessage(vuexContext, message) {
         vuexContext.state.chatMessages.push(message)
       },
+
+      takeOverChat(vuexContext, id) {
+        vuexContext.commit('setChatRoom', id)
+        Cookie.set('chatroomId', id)
+      },
     },
     getters: {
       isAuth(state) {
