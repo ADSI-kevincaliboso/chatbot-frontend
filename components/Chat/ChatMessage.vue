@@ -47,7 +47,6 @@ export default {
           })
 
         this.message = ''
-
         this.$emit('messageSent', res.data.data)
       }
     },

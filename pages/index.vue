@@ -1,17 +1,18 @@
 <!-- eslint-disable no-lonely-if -->
 <template>
-  <div>
-    <form @submit.prevent="authUser">
-      <div v-show="isLogin === false">
+  <div class="container">
+    <form class="form" @submit.prevent="authUser">
+      <div v-show="isLogin === false" class="form-control">
         <label for="username">Username/Nickname</label>
         <TextInput id="username" v-model="name" />
       </div>
-      <div>
+
+      <div class="form-control">
         <label for="email">Email</label>
         <TextInput id="email" v-model="email" />
       </div>
 
-      <div>
+      <div class="form-control">
         <label for="password">Password</label>
         <TextInput id="password" v-model="password" type="password" />
       </div>
@@ -73,3 +74,27 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.container {
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form {
+  border: 1px solid black;
+  padding: 50px;
+  border-radius: 20px;
+}
+
+.form-control {
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+</style>
