@@ -12,7 +12,7 @@
 import TheSideNav from '~/components/Shared/TheSideNav.vue'
 
 export default {
-  name: 'AdminDashboardPage',
+  name: 'AdminPage',
   components: {
     TheSideNav,
   },
