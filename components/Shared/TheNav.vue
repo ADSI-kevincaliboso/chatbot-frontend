@@ -13,8 +13,14 @@ export default {
   name: 'TheNav',
   methods: {
     logoutUser() {
+      const roomId = this.$store.getters.chatroom
       // destroy user keys and remove authtoken
       this.$store.dispatch('logoutUser')
+      this.$echo.leave(`chat.${roomId}`)
+
+      if (this.$store.getters.userType === 'admin') {
+        this.$echo.leave(`chatrooms`)
+      }
       // redirect to /
       this.$router.push('/')
     },
