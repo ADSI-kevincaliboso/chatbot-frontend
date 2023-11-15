@@ -62,11 +62,18 @@ export default {
         if (!res) {
           this.error = this.$store.getters.error
         } else {
-          // eslint-disable-next-line no-lonely-if
-          if (res !== 'user') {
-            this.$router.push('/admin')
-          } else {
-            this.$router.push('/chatbot')
+          switch (res) {
+            case 'user':
+              this.$router.push('/chatbot')
+              break
+            case 'admin':
+              this.$router.push('/admin')
+              break
+            case 'moderator':
+              this.$router.push('/moderator')
+              break
+            default:
+              break
           }
         }
       })
