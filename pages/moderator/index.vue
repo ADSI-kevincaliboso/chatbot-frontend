@@ -12,12 +12,12 @@
 import TheSideNav from '~/components/Shared/TheSideNav.vue'
 
 export default {
-  name: 'AdminPage',
+  name: 'AdminDashboardPage',
   components: {
     TheSideNav,
   },
   layout: 'auth',
-  middleware: ['checkAuth', 'auth', 'isAdmin'],
+  middleware: ['checkAuth', 'auth', 'isModerator'],
   data() {
     return {
       chatrooms: [],
@@ -36,8 +36,18 @@ export default {
       this.$echo.connector.options.auth.headers.Authorization = `Bearer ${this.$store.getters.token}`
 
       const privateChannel = this.$echo.private(`chatrooms`)
-      privateChannel.listen('.chatroom.new', (event) => {
-        this.chatrooms.push(event.chatroom)
+      privateChannel.listen(
+        `.chatroom.assigned.to.${this.$store.getters.userId}`,
+        (event) => {
+          this.chatrooms.push(event.chatroom)
+        }
+      )
+
+      // create listener for a broadcast when the chatroom assigned to you goes live
+      privateChannel.listen(`.chatroom.active`, (event) => {
+        if (event.chatroom.moderator === Number(this.$store.getters.userId)) {
+          this.chatrooms.push(event.chatroom)
+        }
       })
 
       privateChannel.listen('.chatroom.destroy', (event) => {

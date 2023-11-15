@@ -11,10 +11,14 @@ const createStore = () => {
       chatroom: null,
       chatMessages: [],
       userType: '',
+      userId: 0,
     },
     mutations: {
       setUserToken(state, token) {
         state.authToken = token
+      },
+      setUserId(state, id) {
+        state.userId = id
       },
       clearStore(state) {
         state.authToken = ''
@@ -68,10 +72,12 @@ const createStore = () => {
                 vuexContext.commit('setUserToken', user.token)
                 vuexContext.commit('setChatRoom', user.chatroomId)
                 vuexContext.commit('setUserType', user.data.user_type)
+                vuexContext.commit('setUserId', user.data.id)
                 // set to cookie using js-cookie
                 Cookie.set('jwt', user.token)
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
+                Cookie.set('userId', user.data.id)
 
                 // return user type for routing purposes outside
                 return user.data.user_type
@@ -96,10 +102,12 @@ const createStore = () => {
                 vuexContext.commit('setUserToken', user.token)
                 vuexContext.commit('setChatRoom', user.chatroomId)
                 vuexContext.commit('setUserType', user.data.user_type)
+                vuexContext.commit('setUserId', user.data.id)
 
                 Cookie.set('jwt', user.token)
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
+                Cookie.set('userId', user.data.id)
 
                 return user.data.user_type
               })
@@ -133,15 +141,21 @@ const createStore = () => {
             .split(';')
             .find((value) => value.trim().startsWith('userType='))
             .split('=')[1]
+
+          const userId = req.headers.cookie
+            .split(';')
+            .find((value) => value.trim().startsWith('userId='))
+            .split('=')[1]
           vuexContext.commit('setUserToken', token)
           vuexContext.commit('setChatRoom', chatroomId)
           vuexContext.commit('setUserType', type)
+          vuexContext.commit('setUserId', userId)
         }
       },
 
       async logoutUser(vuexContext) {
         // logout user from backend
-        const roomId = vuexContext.state.chatroom
+        // const roomId = vuexContext.state.chatroom
         await axios.post(`${process.env.baseUrl}/logout`, null, {
           headers: {
             Authorization: `Bearer ${this.state.authToken}`,
@@ -149,8 +163,7 @@ const createStore = () => {
         })
         // clear cookies also
         vuexContext.commit('clearStore')
-
-        this.$echo.leave(`chat.${roomId}`)
+        // this.$echo.leave(`chat.${roomId}`)
       },
 
       async createChatRoom(vuexContext) {
@@ -197,6 +210,9 @@ const createStore = () => {
       },
       userType(state) {
         return state.userType
+      },
+      userId(state) {
+        return state.userId
       },
     },
   })

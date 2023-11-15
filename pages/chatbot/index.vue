@@ -1,10 +1,14 @@
 <template>
   <div>
-    <button
-      v-if="this.$store.getters.userType === 'admin'"
-      @click="redirectToAdmin"
-    >
+    <button v-if="$store.getters.userType === 'admin'" @click="redirectToAdmin">
       Go back to admin dashboard
+    </button>
+
+    <button
+      v-if="$store.getters.userType === 'moderator'"
+      @click="redirectToModerator"
+    >
+      Go back to moderator dashboard
     </button>
 
     <h1>Chatbot</h1>
@@ -72,6 +76,11 @@ export default {
     redirectToAdmin() {
       this.$echo.leave(`chat.${this.$store.getters.chatroom}`)
       this.$router.push('/admin')
+    },
+
+    redirectToModerator() {
+      this.$echo.leave(`chat.${this.$store.getters.chatroom}`)
+      this.$router.push('/moderator')
     },
   },
 }

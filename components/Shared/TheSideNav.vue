@@ -1,7 +1,9 @@
 <template>
   <div>
     <button @click="getChatRooms">ChatRooms</button>
-    <button @click="getUsers">Users</button>
+    <button v-show="this.$store.getters.userType === 'admin'" @click="getUsers">
+      Users
+    </button>
 
     <div>
       <ChatRooms v-show="showChatRooms" :chatrooms="rooms" />
@@ -46,12 +48,23 @@ export default {
   },
   methods: {
     async getChatRooms() {
-      const res = await axios.get(`${process.env.baseUrl}/chat-rooms/`, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${this.$store.getters.token}`,
-        },
-      })
+      let res
+
+      if (this.$store.getters.userType === 'admin') {
+        res = await axios.get(`${process.env.baseUrl}/chat-rooms/`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        })
+      } else {
+        res = await axios.get(`${process.env.baseUrl}/chat-rooms/moderator`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        })
+      }
 
       // this.chatrooms = res.data
       this.$emit('chatroomRefresh', res.data)
