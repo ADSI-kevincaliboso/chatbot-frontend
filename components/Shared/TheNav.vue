@@ -18,7 +18,10 @@ export default {
       this.$store.dispatch('logoutUser')
       this.$echo.leave(`chat.${roomId}`)
 
-      if (this.$store.getters.userType === 'admin') {
+      if (
+        this.$store.getters.userType === 'admin' ||
+        this.$store.getters.userType === 'moderator'
+      ) {
         this.$echo.leave(`chatrooms`)
       }
       // redirect to /
