@@ -22,7 +22,7 @@
     </div>
 
     <div>
-      <ChatMessage @messageSent="addMessage" />
+      <ChatMessage :chatbot-index="index" @messageSent="addMessage" />
     </div>
   </div>
 </template>
@@ -53,17 +53,31 @@ export default {
       })
       .catch((e) => new Error('Chatroom error'))
   },
+  data() {
+    return {
+      index: 0,
+    }
+  },
   computed: {
     messageList() {
       return this.$store.getters.messages
     },
+    getIndex() {
+      return this.index
+    },
   },
   beforeMount() {
     this.connect()
+
+    // get initial bot message here
+    if (!this.$store.getters.chatbotDone) {
+      this.chatbotInit()
+    }
   },
   methods: {
     addMessage(message) {
       this.$store.dispatch('addMessage', message)
+      this.index++
     },
     connect() {
       const roomId = this.$store.getters.chatroom
@@ -72,6 +86,16 @@ export default {
       this.$echo.private(`chat.${roomId}`).listen('.message.new', (event) => {
         this.$store.dispatch('addMessage', event.chatMessage)
       })
+    },
+    async chatbotInit() {
+      const res = await axios.get(`${process.env.baseUrl}/chatbot-messages`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${this.$store.getters.token}`,
+        },
+      })
+      this.addMessage(res.data.data[this.index])
+      this.index++
     },
     redirectToAdmin() {
       this.$echo.leave(`chat.${this.$store.getters.chatroom}`)

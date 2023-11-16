@@ -1,7 +1,13 @@
 <template>
   <div>
     <TextAreaInput v-model="message" />
-    <button @click="sendMessage">Send</button>
+    <button v-show="this.$store.getters.chatbotDone" @click="sendMessage">
+      Send
+    </button>
+
+    <button v-show="!this.$store.getters.chatbotDone" @click="sendBotMessage">
+      Send
+    </button>
   </div>
 </template>
 
@@ -12,6 +18,12 @@ export default {
   name: 'ChatMessage',
   components: {
     TextAreaInput,
+  },
+  props: {
+    chatbotIndex: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {
@@ -48,6 +60,31 @@ export default {
 
         this.message = ''
         this.$emit('messageSent', res.data.data)
+      }
+    },
+
+    async sendBotMessage() {
+      if (this.$props.chatbotIndex <= 3) {
+        const res = await axios.post(
+          `${process.env.baseUrl}/chatbot-messages`,
+          {
+            chatbotMessageId: this.$props.chatbotIndex,
+          },
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${this.$store.getters.token}`,
+            },
+          }
+        )
+        // #TODO in the controller, also append the chatmessage created then push it first before pushing the chatbot-message response
+        this.message = ''
+        this.$emit('messageSent', res.data.data)
+
+        if (this.$props.chatbotIndex >= 3) {
+          // mark it as done
+          this.$store.dispatch('setChatbotDone', true)
+        }
       }
     },
   },
