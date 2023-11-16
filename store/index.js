@@ -12,10 +12,18 @@ const createStore = () => {
       chatMessages: [],
       userType: '',
       userId: 0,
+      doneWithChatbot: false,
+      botInit: true,
     },
     mutations: {
       setUserToken(state, token) {
         state.authToken = token
+      },
+      setChatbotStatus(state, status) {
+        state.doneWithChatbot = status
+      },
+      setBotInit(state, status) {
+        state.botInit = status
       },
       setUserId(state, id) {
         state.userId = id
@@ -26,11 +34,17 @@ const createStore = () => {
         state.chatroom = null
         state.chatMessages = []
         state.userType = ''
+        state.userId = 0
+        state.doneWithChatbot = false
+        state.botInit = false
 
         Cookie.remove('jwt')
         Cookie.remove('messages')
         Cookie.remove('chatroomId')
         Cookie.remove('userType')
+        Cookie.remove('userId')
+        Cookie.remove('doneWithChatbot')
+        Cookie.remove('botInit')
       },
       setError(state, error) {
         state.error = error
@@ -73,11 +87,24 @@ const createStore = () => {
                 vuexContext.commit('setChatRoom', user.chatroomId)
                 vuexContext.commit('setUserType', user.data.user_type)
                 vuexContext.commit('setUserId', user.data.id)
+                vuexContext.commit(
+                  'setChatbotStatus',
+                  Boolean(user.data.doneWithChatbot)
+                )
+                vuexContext.commit(
+                  'setBotInit',
+                  Boolean(user.data.doneWithChatbot)
+                )
                 // set to cookie using js-cookie
                 Cookie.set('jwt', user.token)
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
                 Cookie.set('userId', user.data.id)
+                Cookie.set(
+                  'doneWithChatbot',
+                  Boolean(user.data.doneWithChatbot)
+                )
+                Cookie.set('botInit', Boolean(user.data.doneWithChatbot))
 
                 // return user type for routing purposes outside
                 return user.data.user_type
@@ -103,11 +130,21 @@ const createStore = () => {
                 vuexContext.commit('setChatRoom', user.chatroomId)
                 vuexContext.commit('setUserType', user.data.user_type)
                 vuexContext.commit('setUserId', user.data.id)
+                vuexContext.commit(
+                  'setChatbotStatus',
+                  Boolean(user.data.doneWithChatbot)
+                )
+                vuexContext.commit('setBotInit', Boolean(true))
 
                 Cookie.set('jwt', user.token)
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
                 Cookie.set('userId', user.data.id)
+                Cookie.set(
+                  'doneWithChatbot',
+                  Boolean(user.data.doneWithChatbot)
+                )
+                Cookie.set('botInit', true)
 
                 return user.data.user_type
               })
@@ -146,10 +183,22 @@ const createStore = () => {
             .split(';')
             .find((value) => value.trim().startsWith('userId='))
             .split('=')[1]
+
+          const doneWithChatbot = req.headers.cookie
+            .split(';')
+            .find((value) => value.trim().startsWith('doneWithChatbot='))
+            .split('=')[1]
+
+          const botInit = req.headers.cookie
+            .split(';')
+            .find((value) => value.trim().startsWith('botInit='))
+            .split('=')[1]
           vuexContext.commit('setUserToken', token)
           vuexContext.commit('setChatRoom', chatroomId)
           vuexContext.commit('setUserType', type)
           vuexContext.commit('setUserId', userId)
+          vuexContext.commit('setChatbotStatus', Boolean(doneWithChatbot))
+          vuexContext.commit('setBotInit', botInit)
         }
       },
 
@@ -191,6 +240,11 @@ const createStore = () => {
         vuexContext.commit('setChatRoom', id)
         Cookie.set('chatroomId', id)
       },
+
+      setChatbotDone(vuexContext, status) {
+        vuexContext.commit('setChatbotStatus', status)
+        Cookie.set('doneWithChatbot', true)
+      },
     },
     getters: {
       isAuth(state) {
@@ -213,6 +267,12 @@ const createStore = () => {
       },
       userId(state) {
         return state.userId
+      },
+      chatbotDone(state) {
+        return state.doneWithChatbot
+      },
+      chatbotInit(state) {
+        return state.botInit
       },
     },
   })
