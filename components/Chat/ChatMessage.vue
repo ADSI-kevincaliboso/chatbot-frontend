@@ -6,6 +6,7 @@
         this.$store.getters.chatbotDone ||
         this.$store.getters.userType !== 'user'
       "
+      class="button is-success"
       @click="sendMessage"
     >
       Send
@@ -16,6 +17,7 @@
         !this.$store.getters.chatbotDone &&
         this.$store.getters.userType === 'user'
       "
+      class="button is-success"
       @click="sendBotMessage"
     >
       Send
