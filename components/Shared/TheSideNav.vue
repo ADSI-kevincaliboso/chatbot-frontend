@@ -1,7 +1,11 @@
 <template>
   <div>
-    <button @click="getChatRooms">ChatRooms</button>
-    <button v-show="this.$store.getters.userType === 'admin'" @click="getUsers">
+    <button class="button is-secondary" @click="getChatRooms">ChatRooms</button>
+    <button
+      v-show="this.$store.getters.userType === 'admin'"
+      class="button is-secondary"
+      @click="getUsers"
+    >
       Users
     </button>
 
@@ -37,7 +41,7 @@ export default {
   data() {
     return {
       users: [],
-      showChatRooms: false,
+      showChatRooms: true,
       showUserTable: false,
     }
   },
