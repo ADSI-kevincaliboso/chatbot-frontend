@@ -1,8 +1,14 @@
 <template>
-  <div class="sidenav">
+  <div class="sidenav mt-4">
     <ul class="nav-list">
       <li class="nav-item">
-        <button type="button" @click="logoutUser">Logout</button>
+        <button
+          class="button is-danger is-light"
+          type="button"
+          @click="logoutUser"
+        >
+          Logout
+        </button>
       </li>
     </ul>
   </div>
