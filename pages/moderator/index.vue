@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h1>Dashboard</h1>
+    <br />
+    <h1 class="title">Dashboard</h1>
     <br />
     <TheSideNav :rooms="rooms" @chatroomRefresh="refresh" />
   </div>

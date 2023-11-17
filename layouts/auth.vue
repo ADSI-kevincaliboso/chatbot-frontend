@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container is-fluid is-fullheight">
     <TheNav />
     <nuxt />
   </div>
@@ -14,3 +14,12 @@ export default {
   },
 }
 </script>
+
+<style>
+html,
+body,
+#__nuxt,
+#__layout {
+  height: 100% !important;
+}
+</style>

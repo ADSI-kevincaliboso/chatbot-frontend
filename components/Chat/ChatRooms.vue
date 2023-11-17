@@ -1,9 +1,10 @@
 <template>
   <div>
-    <h1>Chatrooms</h1>
+    <br />
+    <h1 class="subtitle">Chatrooms</h1>
 
     <div>
-      <table>
+      <table class="table is-striped is-hoverable is-fullwidth is-vcentered">
         <thead>
           <tr>
             <th>ID</th>
@@ -17,11 +18,19 @@
             <td>{{ chatroom.id }}</td>
             <td>{{ chatroom.name }}</td>
             <td>
-              <button @click="enterRoom(chatroom.id)">Enter Chatroom</button>
+              <button
+                class="button is-light is-primary"
+                @click="enterRoom(chatroom.id)"
+              >
+                Enter Chatroom
+              </button>
 
               <div v-show="$store.getters.userType === 'admin'">
                 <ModeratorOptions v-model="moderator" />
-                <button @click="assignModerator(chatroom.id)">
+                <button
+                  class="button is-light is-secondary"
+                  @click="assignModerator(chatroom.id)"
+                >
                   Assign Moderator
                 </button>
               </div>

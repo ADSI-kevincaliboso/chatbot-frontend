@@ -96,7 +96,9 @@ const createStore = () => {
                   Boolean(user.data.doneWithChatbot)
                 )
                 // set to cookie using js-cookie
-                Cookie.set('jwt', user.token)
+                Cookie.set('jwt', user.token, {
+                  sameSite: 'strict',
+                })
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
                 Cookie.set('userId', user.data.id)
@@ -130,21 +132,25 @@ const createStore = () => {
                 vuexContext.commit('setChatRoom', user.chatroomId)
                 vuexContext.commit('setUserType', user.data.user_type)
                 vuexContext.commit('setUserId', user.data.id)
-                vuexContext.commit(
-                  'setChatbotStatus',
-                  Boolean(user.data.doneWithChatbot)
-                )
-                vuexContext.commit('setBotInit', Boolean(true))
 
-                Cookie.set('jwt', user.token)
+                Cookie.set('jwt', user.token, { sameSite: 'strict' })
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
                 Cookie.set('userId', user.data.id)
-                Cookie.set(
-                  'doneWithChatbot',
-                  Boolean(user.data.doneWithChatbot)
-                )
-                Cookie.set('botInit', true)
+
+                if (user.data.user_type === 'user') {
+                  vuexContext.commit(
+                    'setChatbotStatus',
+                    Boolean(user.data.doneWithChatbot)
+                  )
+                  vuexContext.commit('setBotInit', Boolean(true))
+
+                  Cookie.set(
+                    'doneWithChatbot',
+                    Boolean(user.data.doneWithChatbot)
+                  )
+                  Cookie.set('botInit', true)
+                }
 
                 return user.data.user_type
               })
@@ -184,21 +190,25 @@ const createStore = () => {
             .find((value) => value.trim().startsWith('userId='))
             .split('=')[1]
 
-          const doneWithChatbot = req.headers.cookie
-            .split(';')
-            .find((value) => value.trim().startsWith('doneWithChatbot='))
-            .split('=')[1]
+          if (type === 'user') {
+            const doneWithChatbot = req.headers.cookie
+              .split(';')
+              .find((value) => value.trim().startsWith('doneWithChatbot='))
+              .split('=')[1]
 
-          const botInit = req.headers.cookie
-            .split(';')
-            .find((value) => value.trim().startsWith('botInit='))
-            .split('=')[1]
+            const botInit = req.headers.cookie
+              .split(';')
+              .find((value) => value.trim().startsWith('botInit='))
+              .split('=')[1]
+
+            vuexContext.commit('setChatbotStatus', Boolean(doneWithChatbot))
+            vuexContext.commit('setBotInit', botInit)
+          }
+
           vuexContext.commit('setUserToken', token)
           vuexContext.commit('setChatRoom', chatroomId)
           vuexContext.commit('setUserType', type)
           vuexContext.commit('setUserId', userId)
-          vuexContext.commit('setChatbotStatus', Boolean(doneWithChatbot))
-          vuexContext.commit('setBotInit', botInit)
         }
       },
 

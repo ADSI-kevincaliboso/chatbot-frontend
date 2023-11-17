@@ -1,7 +1,9 @@
 <template>
   <input
+    class="input"
     :type="type"
     :value="value"
+    autocomplete="off"
     @input="$emit('input', $event.target.value)"
   />
 </template>

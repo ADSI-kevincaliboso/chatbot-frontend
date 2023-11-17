@@ -1,27 +1,61 @@
 <template>
   <div>
-    <h1>User Table</h1>
-    <button @click="toggleModal">Create Account</button>
+    <br />
+    <h1 class="subtitle">User Table</h1>
 
-    <div v-show="showModal">
-      <form @submit.prevent="createAccount">
-        <label for="name">Name</label>
-        <TextInput id="name" v-model="name" />
+    <button class="button is-primary" @click="toggleModal">
+      Create Account
+    </button>
+    <br />
+    <br />
 
-        <label for="email">Email</label>
-        <TextInput id="email" v-model="email" />
+    <div class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Modal title</p>
+          <button
+            class="delete"
+            aria-label="close"
+            @click="toggleModal"
+          ></button>
+        </header>
+        <section class="modal-card-body">
+          <form id="newUserForm" @submit.prevent="createAccount">
+            <div class="field">
+              <label for="name" class="label">Name</label>
+              <TextInput id="name" v-model="name" />
+            </div>
 
-        <label for="userType">User Type</label>
-        <DropDown v-model="userType" />
+            <div class="field">
+              <label for="email" class="label">Email</label>
+              <TextInput id="email" v-model="email" />
+            </div>
 
-        <label for="password">Password</label>
-        <TextInput id="password" v-model="password" type="password" />
+            <div class="field">
+              <label for="userType" class="label">User Type</label>
+              <DropDown v-model="userType" />
+            </div>
 
-        <button type="submit">Create</button>
-      </form>
+            <div class="field">
+              <label for="password" class="label">Password</label>
+              <TextInput id="password" v-model="password" type="password" />
+            </div>
+            <p class="help is-danger">{{ errorMessage }}</p>
+            <!-- <button type="submit">Create</button> -->
+          </form>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" type="submit" form="newUserForm">
+            Save changes
+          </button>
+          <button class="button" @click="toggleModal">Cancel</button>
+        </footer>
+      </div>
     </div>
+
     <div>
-      <table>
+      <table class="table is-striped is-hoverable is-fullwidth is-vcentered">
         <thead>
           <tr>
             <th>ID</th>
@@ -38,7 +72,11 @@
             <td>{{ user.name }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.user_type }}</td>
-            <td><button @click="deleteUser(user.id)">Delete</button></td>
+            <td>
+              <button class="button is-danger" @click="deleteUser(user.id)">
+                Delete
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -72,6 +110,11 @@ export default {
       userType: '',
     }
   },
+  computed: {
+    errorMessage() {
+      return this.$store.getters.error
+    },
+  },
   methods: {
     async deleteUser(id) {
       // delete from backend
@@ -86,7 +129,7 @@ export default {
     },
 
     toggleModal() {
-      this.showModal = !this.showModal
+      this.$el.querySelector('.modal').classList.toggle('is-active')
     },
 
     async createAccount() {
@@ -97,21 +140,27 @@ export default {
         user_type: this.userType,
       }
 
-      const res = await axios.post(`${process.env.baseUrl}/users`, data, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${this.$store.getters.token}`,
-        },
-      })
+      await axios
+        .post(`${process.env.baseUrl}/users`, data, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        })
+        .then((res) => {
+          this.name = ''
+          this.email = ''
+          this.password = ''
+          this.userType = ''
 
-      this.name = ''
-      this.email = ''
-      this.password = ''
-      this.userType = ''
+          this.showModal = false
 
-      this.showModal = false
-
-      this.$emit('addUser', res.data.data)
+          this.$emit('addUser', res.data.data)
+          this.$el.querySelector('.modal').classList.toggle('is-active')
+        })
+        .catch((e) => {
+          this.$store.commit('setError', e.response.data.message)
+        })
     },
   },
 }

@@ -1,28 +1,42 @@
 <template>
-  <div>
-    <button v-if="$store.getters.userType === 'admin'" @click="redirectToAdmin">
+  <div class="container mt-4">
+    <button
+      class="button is-text"
+      v-if="$store.getters.userType === 'admin'"
+      @click="redirectToAdmin"
+    >
       Go back to admin dashboard
     </button>
 
     <button
+      class="button is-text"
       v-if="$store.getters.userType === 'moderator'"
       @click="redirectToModerator"
     >
       Go back to moderator dashboard
     </button>
+    <br />
+    <br />
+    <h1 class="title">Chatbot</h1>
 
-    <h1>Chatbot</h1>
-
-    <div class="container">
+    <div
+      class="chat-container box has-background-white-ter box-radius-20 px-5 py-2"
+    >
       <ul>
-        <li v-for="message in messageList" :key="message.id" class="lst-item">
-          <b>{{ message.sender.name }}</b> : {{ message.message }}
+        <li v-for="message in messageList" :key="message.id">
+          <div class="bubble">
+            <b>{{ message.sender.name }}</b> : {{ message.message }}
+          </div>
         </li>
       </ul>
     </div>
 
     <div>
-      <ChatMessage :chatbot-index="index" @messageSent="addMessage" />
+      <ChatMessage
+        :chatbot-index="index"
+        @messageSent="addMessage"
+        @botMessageSent="botAddMessage"
+      />
     </div>
   </div>
 </template>
@@ -70,13 +84,24 @@ export default {
     this.connect()
 
     // get initial bot message here
-    if (!this.$store.getters.chatbotDone) {
+    if (
+      !this.$store.getters.chatbotDone &&
+      this.$store.getters.userType === 'user'
+    ) {
       this.chatbotInit()
     }
   },
   methods: {
     addMessage(message) {
       this.$store.dispatch('addMessage', message)
+    },
+    botAddMessage(message) {
+      if (message.chatMessage && message.chatbotMessage) {
+        this.$store.dispatch('addMessage', message.chatMessage)
+        this.$store.dispatch('addMessage', message.chatbotMessage)
+      } else {
+        this.$store.dispatch('addMessage', message)
+      }
       this.index++
     },
     connect() {
@@ -94,7 +119,7 @@ export default {
           Authorization: `Bearer ${this.$store.getters.token}`,
         },
       })
-      this.addMessage(res.data.data[this.index])
+      this.botAddMessage(res.data.data[this.index])
       this.index++
     },
     redirectToAdmin() {
@@ -111,12 +136,22 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  border: 1px solid black;
+.chat-container {
   height: 400px;
   overflow: auto;
   display: flex;
   flex-direction: column-reverse;
+}
+
+.bubble {
+  border: solid gray;
+  margin: 20px;
+  padding: 10px;
+  width: 400px;
+  display: flex;
+  overflow-wrap: normal;
+  height: 100%;
+  border-radius: 20px;
 }
 
 li {
