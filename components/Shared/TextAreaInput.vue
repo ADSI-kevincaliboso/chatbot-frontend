@@ -1,9 +1,13 @@
 <template>
-  <textarea
-    :value="value"
-    @input="handleInput"
-    @keyup.enter="handleInput"
-  ></textarea>
+  <div class="field">
+    <textarea
+      class="textarea"
+      rows="2"
+      :value="value"
+      @input="handleInput"
+      @keyup.enter="handleInput"
+    ></textarea>
+  </div>
 </template>
 
 <script>
