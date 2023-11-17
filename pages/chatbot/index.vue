@@ -22,7 +22,11 @@
     </div>
 
     <div>
-      <ChatMessage :chatbot-index="index" @messageSent="addMessage" />
+      <ChatMessage
+        :chatbot-index="index"
+        @messageSent="addMessage"
+        @botMessageSent="botAddMessage"
+      />
     </div>
   </div>
 </template>
@@ -70,13 +74,26 @@ export default {
     this.connect()
 
     // get initial bot message here
-    if (!this.$store.getters.chatbotDone) {
+    if (
+      !this.$store.getters.chatbotDone &&
+      this.$store.getters.userType === 'user'
+    ) {
       this.chatbotInit()
     }
   },
   methods: {
     addMessage(message) {
       this.$store.dispatch('addMessage', message)
+    },
+    botAddMessage(message) {
+      console.log('you are here')
+      console.log(message)
+      if (message.chatMessage && message.chatbotMessage) {
+        this.$store.dispatch('addMessage', message.chatMessage)
+        this.$store.dispatch('addMessage', message.chatbotMessage)
+      } else {
+        this.$store.dispatch('addMessage', message)
+      }
       this.index++
     },
     connect() {
@@ -94,7 +111,7 @@ export default {
           Authorization: `Bearer ${this.$store.getters.token}`,
         },
       })
-      this.addMessage(res.data.data[this.index])
+      this.botAddMessage(res.data.data[this.index])
       this.index++
     },
     redirectToAdmin() {
