@@ -1,19 +1,21 @@
 <template>
-  <select
-    id="moderator"
-    name="moderator"
-    :value="value"
-    @change="$emit('input', Number($event.target.value))"
-  >
-    <option value="">select moderator</option>
-    <option
-      v-for="user in moderatorList"
-      :key="user.id"
-      :value="Number(user.id)"
+  <div class="select">
+    <select
+      id="moderator"
+      name="moderator"
+      :value="value"
+      @change="$emit('input', Number($event.target.value))"
     >
-      {{ user.name }}
-    </option>
-  </select>
+      <option :value="Number(0)" selected>Select moderator</option>
+      <option
+        v-for="user in moderatorList"
+        :key="user.id"
+        :value="Number(user.id)"
+      >
+        {{ user.name }}
+      </option>
+    </select>
+  </div>
 </template>
 
 <script>
