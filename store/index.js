@@ -119,6 +119,7 @@ const createStore = () => {
             //
           }
         } else {
+          // login part
           try {
             return await axios
               .post(`${process.env.baseUrl}/login`, data, {
@@ -143,13 +144,16 @@ const createStore = () => {
                     'setChatbotStatus',
                     Boolean(user.data.doneWithChatbot)
                   )
-                  vuexContext.commit('setBotInit', Boolean(true))
+                  vuexContext.commit(
+                    'setBotInit',
+                    Boolean(user.data.doneWithChatbot)
+                  )
 
                   Cookie.set(
                     'doneWithChatbot',
                     Boolean(user.data.doneWithChatbot)
                   )
-                  Cookie.set('botInit', true)
+                  Cookie.set('botInit', Boolean(user.data.doneWithChatbot))
                 }
 
                 return user.data.user_type
@@ -253,7 +257,9 @@ const createStore = () => {
 
       setChatbotDone(vuexContext, status) {
         vuexContext.commit('setChatbotStatus', status)
+        vuexContext.commit('setBotInit', status)
         Cookie.set('doneWithChatbot', true)
+        Cookie.set('botInit', true)
       },
     },
     getters: {
