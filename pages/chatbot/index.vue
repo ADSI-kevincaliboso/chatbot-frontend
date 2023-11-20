@@ -1,31 +1,58 @@
 <template>
   <div class="container mt-4">
     <button
-      class="button is-text"
       v-if="$store.getters.userType === 'admin'"
+      class="button is-text"
       @click="redirectToAdmin"
     >
       Go back to admin dashboard
     </button>
 
     <button
-      class="button is-text"
       v-if="$store.getters.userType === 'moderator'"
+      class="button is-text"
       @click="redirectToModerator"
     >
       Go back to moderator dashboard
     </button>
-    <br />
-    <br />
     <h1 class="title">Chatbot</h1>
 
     <div
-      class="chat-container box has-background-white-ter box-radius-20 px-5 py-2"
+      class="chat-container box has-background-white-ter box-radius-20 px-5 py-2 is-flex is-flex-direction-column-reverse"
     >
       <ul>
         <li v-for="message in messageList" :key="message.id">
-          <div class="bubble">
-            <b>{{ message.sender.name }}</b> : {{ message.message }}
+          <div
+            :class="
+              Number(message.sender.id) === Number($store.getters.userId) ||
+              message.sender.user_type === $store.getters.userType
+                ? 'm-3 is-flex is-fullheight is-justify-content-flex-start is-align-items-end is-flex-direction-row-reverse'
+                : 'm-3 is-flex is-fullheight is-align-items-end'
+            "
+          >
+            <div class="mr-2">
+              <img
+                v-if="message.sender.user_type === 'user'"
+                src="~/assets/img/profile-user.png"
+                alt="user-profile"
+                class="profile-user"
+              />
+              <img
+                v-else
+                src="~/assets/img/robot.png"
+                alt="robot-profile"
+                class="profile-user"
+              />
+            </div>
+            <div
+              :class="
+                Number(message.sender.id) === Number($store.getters.userId)
+                  ? 'bubble-content-sent'
+                  : 'bubble-content'
+              "
+            >
+              {{ message.message }}
+            </div>
           </div>
         </li>
       </ul>
@@ -119,7 +146,24 @@ export default {
           Authorization: `Bearer ${this.$store.getters.token}`,
         },
       })
-      this.botAddMessage(res.data.data[this.index])
+
+      // push the message to the chatmessage table first
+      const chatbotMessage = res.data.data[this.index]
+      const botRes = await axios.post(
+        `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message/bot`,
+        {
+          message: chatbotMessage.message,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+
+      // get the result of the chat message creation then push it to botAddMessage
+      this.botAddMessage(botRes.data.data)
       this.index++
     },
     redirectToAdmin() {
@@ -137,21 +181,36 @@ export default {
 
 <style scoped>
 .chat-container {
-  height: 400px;
+  height: 500px;
   overflow: auto;
-  display: flex;
-  flex-direction: column-reverse;
 }
 
-.bubble {
+.profile-user {
+  width: 25px;
+  height: 25px;
+}
+
+.bubble-content {
   border: solid gray;
-  margin: 20px;
-  padding: 10px;
-  width: 400px;
-  display: flex;
-  overflow-wrap: normal;
+  padding: 20px;
+  max-width: 650px;
+  overflow: auto;
   height: 100%;
-  border-radius: 20px;
+  border-radius: 15px;
+  word-break: normal;
+  margin-right: 10px;
+}
+
+.bubble-content-sent {
+  border: solid gray;
+  padding: 20px;
+  max-width: 650px;
+  overflow: auto;
+  height: 100%;
+  border-radius: 15px;
+  justify-content: flex-end;
+  word-break: normal;
+  margin-right: 10px;
 }
 
 li {
