@@ -2,7 +2,9 @@
   <div>
     <TextAreaInput v-model="message" />
     <button
-      v-show="$store.getters.chatbotDone || $store.getters.userType !== 'user'"
+      v-show="
+        $store.getters.chatbotDone == 1 || $store.getters.userType !== 'user'
+      "
       class="button is-success"
       @click="sendMessage"
     >
@@ -10,7 +12,9 @@
     </button>
 
     <button
-      v-show="!$store.getters.chatbotDone && $store.getters.userType === 'user'"
+      v-show="
+        $store.getters.chatbotDone == 0 && $store.getters.userType === 'user'
+      "
       class="button is-success"
       @click="sendBotMessage"
     >
@@ -40,6 +44,7 @@ export default {
   },
   methods: {
     async sendMessage() {
+      console.log(this.$props.chatbotIndex)
       // send message then emit a event that the message is sent
       if (this.message) {
         const res = await axios
@@ -96,7 +101,7 @@ export default {
 
         if (this.$props.chatbotIndex >= 3) {
           // mark it as done
-          this.$store.dispatch('setChatbotDone', true)
+          this.$store.dispatch('setChatbotDone', 1)
 
           // send the true value to doneWithChatbot update
           await axios.patch(
