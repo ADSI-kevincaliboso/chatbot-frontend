@@ -63,7 +63,7 @@
             <b-button
               type="is-info is-light"
               size="is-small"
-              @click="choiceSelected(choice.reply_id)"
+              @click="choiceSelected(choice.id, choice.reply_id)"
             >
               {{ choice.choice }}
             </b-button>
@@ -75,6 +75,7 @@
     <div>
       <ChatMessage
         :chatbot-index="index"
+        :chat-message-id="messageId"
         @messageSent="addMessage"
         @botMessageSent="botAddMessage"
       />
@@ -112,6 +113,7 @@ export default {
     return {
       index: 0,
       choices: [],
+      botMessageId: 0,
     }
   },
   computed: {
@@ -123,6 +125,9 @@ export default {
     },
     choicesButton() {
       return this.choices
+    },
+    messageId() {
+      return this.botMessageId
     },
   },
   beforeMount() {
@@ -144,6 +149,19 @@ export default {
     },
     botAddMessage(message) {
       if (message.chatMessage && message.chatbotMessage) {
+        if (!message.chatbotMessage.chatbotId) {
+          this.botMessageId = 0
+        } else {
+          this.botMessageId = message.chatbotMessage.chatbotId
+        }
+        if (
+          message.chatbotMessage.choices?.length === 0 &&
+          this.botMessageId !== 2
+        ) {
+          this.chatbotChoicesInit()
+        }
+
+        this.choices = []
         this.$store.dispatch('addMessage', message.chatMessage)
         this.$store.dispatch('addMessage', message.chatbotMessage)
       } else {
@@ -151,13 +169,24 @@ export default {
       }
       this.index++
     },
-    async choiceSelected(id) {
-      // TODO! post the selected choices to the chat message as well and send it back in the res so we can put it to the
-      // array in vuex
+    async choiceSelected(id, replyId) {
+      this.botMessageId = id
+      const choiceRes = await axios.get(
+        `${process.env.baseUrl}/chatbot-choices/${id}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+
+      this.botAddMessage(choiceRes.data.data)
+
       const res = await axios.post(
         `${process.env.baseUrl}/chatbot-messages/get-response`,
         {
-          selectedId: Number(id),
+          selectedId: Number(replyId),
         },
         {
           headers: {
@@ -168,6 +197,7 @@ export default {
       )
 
       this.choices = res.data.data.choices
+      // putting the response of bot (res.data.data.message)
       const botRes = await axios.post(
         `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message/bot`,
         {

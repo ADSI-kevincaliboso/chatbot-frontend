@@ -113,7 +113,7 @@ const createStore = () => {
                 vuexContext.commit('setError', error.response.data.message)
               })
           } catch (error) {
-            //
+            return error
           }
         } else {
           // login part
@@ -246,7 +246,17 @@ const createStore = () => {
         Cookie.set('chatroomId', id)
       },
 
-      setChatbotDone(vuexContext, status) {
+      async setChatbotDone(vuexContext, status) {
+        await axios.patch(
+          `${process.env.baseUrl}/users/${vuexContext.state.userId}`,
+          null,
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${vuexContext.state.authToken}`,
+            },
+          }
+        )
         vuexContext.commit('setChatbotStatus', status)
         vuexContext.commit('setBotInit', status)
         Cookie.set('doneWithChatbot', 1)
