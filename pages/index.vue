@@ -70,8 +70,17 @@ export default {
 
       this.$store.dispatch('authUser', authData).then((res) => {
         if (!res) {
-          this.error = this.$store.getters.error
+          this.$buefy.toast.open({
+            message: 'Something went wrong. Please check your fields',
+            type: 'is-danger',
+            position: 'is-bottom',
+          })
+          // this.error = this.$store.getters.error
         } else {
+          this.$buefy.toast.open({
+            message: 'Login Successful!',
+            type: 'is-success',
+          })
           switch (res) {
             case 'user':
               this.$router.push('/chatbot')
