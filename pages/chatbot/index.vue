@@ -55,12 +55,27 @@
             </div>
           </div>
         </li>
+        <div
+          v-if="choicesButton.length > 0"
+          class="is-flex is-justify-content-space-evenly mt-4"
+        >
+          <div v-for="choice in choices" :key="choice.reply_id">
+            <b-button
+              type="is-info is-light"
+              size="is-small"
+              @click="choiceSelected(choice.id, choice.reply_id)"
+            >
+              {{ choice.choice }}
+            </b-button>
+          </div>
+        </div>
       </ul>
     </div>
 
     <div>
       <ChatMessage
         :chatbot-index="index"
+        :chat-message-id="messageId"
         @messageSent="addMessage"
         @botMessageSent="botAddMessage"
       />
@@ -97,6 +112,8 @@ export default {
   data() {
     return {
       index: 0,
+      choices: [],
+      botMessageId: 0,
     }
   },
   computed: {
@@ -106,13 +123,21 @@ export default {
     getIndex() {
       return this.index
     },
+    choicesButton() {
+      return this.choices
+    },
+    messageId() {
+      return this.botMessageId
+    },
   },
   beforeMount() {
     this.connect()
-
+  },
+  mounted() {
     // get initial bot message here
     if (
-      !this.$store.getters.chatbotDone &&
+      // eslint-disable-next-line eqeqeq
+      this.$store.getters.chatbotDone == 0 &&
       this.$store.getters.userType === 'user'
     ) {
       this.chatbotInit()
@@ -124,12 +149,72 @@ export default {
     },
     botAddMessage(message) {
       if (message.chatMessage && message.chatbotMessage) {
+        if (!message.chatbotMessage.chatbotId) {
+          this.botMessageId = 0
+        } else {
+          this.botMessageId = message.chatbotMessage.chatbotId
+        }
+        if (
+          message.chatbotMessage.choices?.length === 0 &&
+          this.botMessageId !== 2
+        ) {
+          this.chatbotChoicesInit()
+        }
+
+        this.choices = []
         this.$store.dispatch('addMessage', message.chatMessage)
         this.$store.dispatch('addMessage', message.chatbotMessage)
       } else {
         this.$store.dispatch('addMessage', message)
       }
       this.index++
+    },
+    async choiceSelected(id, replyId) {
+      this.botMessageId = id
+      const choiceRes = await axios.get(
+        `${process.env.baseUrl}/chatbot-choices/${id}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+
+      this.botAddMessage(choiceRes.data.data)
+
+      const res = await axios.post(
+        `${process.env.baseUrl}/chatbot-messages/get-response`,
+        {
+          selectedId: Number(replyId),
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+
+      this.choices = res.data.data.choices
+      // putting the response of bot (res.data.data.message)
+      const botRes = await axios.post(
+        `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message/bot`,
+        {
+          message: res.data.data.message,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+      this.botAddMessage(botRes.data.data)
+
+      if (this.choices.length === 0 && id !== 2) {
+        this.chatbotChoicesInit()
+      }
     },
     connect() {
       const roomId = this.$store.getters.chatroom
@@ -140,15 +225,19 @@ export default {
       })
     },
     async chatbotInit() {
-      const res = await axios.get(`${process.env.baseUrl}/chatbot-messages`, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${this.$store.getters.token}`,
-        },
-      })
+      const res = await axios.get(
+        `${process.env.baseUrl}/chatbot-messages/init`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
 
       // push the message to the chatmessage table first
-      const chatbotMessage = res.data.data[this.index]
+      const chatbotMessage = res.data.data[0]
+      this.choices = [...res.data.data[0].choices]
       const botRes = await axios.post(
         `${process.env.baseUrl}/chat/room/${this.$store.getters.chatroom}/message/bot`,
         {
@@ -165,6 +254,20 @@ export default {
       // get the result of the chat message creation then push it to botAddMessage
       this.botAddMessage(botRes.data.data)
       this.index++
+    },
+    async chatbotChoicesInit() {
+      const res = await axios.get(
+        `${process.env.baseUrl}/chatbot-messages/init`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${this.$store.getters.token}`,
+          },
+        }
+      )
+
+      // push the message to the chatmessage table first
+      this.choices = [...res.data.data[0].choices]
     },
     redirectToAdmin() {
       this.$echo.leave(`chat.${this.$store.getters.chatroom}`)

@@ -12,7 +12,7 @@ const createStore = () => {
       chatMessages: [],
       userType: '',
       userId: 0,
-      doneWithChatbot: false,
+      doneWithChatbot: 0,
       botInit: true,
     },
     mutations: {
@@ -35,7 +35,7 @@ const createStore = () => {
         state.chatMessages = []
         state.userType = ''
         state.userId = 0
-        state.doneWithChatbot = false
+        state.doneWithChatbot = 0
         state.botInit = false
 
         Cookie.remove('jwt')
@@ -89,7 +89,7 @@ const createStore = () => {
                 vuexContext.commit('setUserId', user.data.id)
                 vuexContext.commit(
                   'setChatbotStatus',
-                  Boolean(user.data.doneWithChatbot)
+                  user.data.doneWithChatbot
                 )
                 vuexContext.commit(
                   'setBotInit',
@@ -102,10 +102,7 @@ const createStore = () => {
                 Cookie.set('chatroomId', user.chatroomId)
                 Cookie.set('userType', user.data.user_type)
                 Cookie.set('userId', user.data.id)
-                Cookie.set(
-                  'doneWithChatbot',
-                  Boolean(user.data.doneWithChatbot)
-                )
+                Cookie.set('doneWithChatbot', user.data.doneWithChatbot)
                 Cookie.set('botInit', Boolean(user.data.doneWithChatbot))
 
                 // return user type for routing purposes outside
@@ -116,7 +113,7 @@ const createStore = () => {
                 vuexContext.commit('setError', error.response.data.message)
               })
           } catch (error) {
-            //
+            return error
           }
         } else {
           // login part
@@ -142,17 +139,11 @@ const createStore = () => {
                 if (user.data.user_type === 'user') {
                   vuexContext.commit(
                     'setChatbotStatus',
-                    Boolean(user.data.doneWithChatbot)
+                    user.data.doneWithChatbot
                   )
-                  vuexContext.commit(
-                    'setBotInit',
-                    Boolean(user.data.doneWithChatbot)
-                  )
+                  vuexContext.commit('setBotInit', user.data.doneWithChatbot)
 
-                  Cookie.set(
-                    'doneWithChatbot',
-                    Boolean(user.data.doneWithChatbot)
-                  )
+                  Cookie.set('doneWithChatbot', user.data.doneWithChatbot)
                   Cookie.set('botInit', Boolean(user.data.doneWithChatbot))
                 }
 
@@ -205,7 +196,7 @@ const createStore = () => {
               .find((value) => value.trim().startsWith('botInit='))
               .split('=')[1]
 
-            vuexContext.commit('setChatbotStatus', Boolean(doneWithChatbot))
+            vuexContext.commit('setChatbotStatus', doneWithChatbot)
             vuexContext.commit('setBotInit', botInit)
           }
 
@@ -255,10 +246,20 @@ const createStore = () => {
         Cookie.set('chatroomId', id)
       },
 
-      setChatbotDone(vuexContext, status) {
+      async setChatbotDone(vuexContext, status) {
+        await axios.patch(
+          `${process.env.baseUrl}/users/${vuexContext.state.userId}`,
+          null,
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${vuexContext.state.authToken}`,
+            },
+          }
+        )
         vuexContext.commit('setChatbotStatus', status)
         vuexContext.commit('setBotInit', status)
-        Cookie.set('doneWithChatbot', true)
+        Cookie.set('doneWithChatbot', 1)
         Cookie.set('botInit', true)
       },
     },
