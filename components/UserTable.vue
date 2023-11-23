@@ -46,40 +46,62 @@
           </form>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-success" type="submit" form="newUserForm">
+          <b-button
+            type="is-success"
+            native-type="submit"
+            form="newUserForm"
+            :loading="action"
+          >
             Save changes
-          </button>
+          </b-button>
           <button class="button" @click="toggleModal">Cancel</button>
         </footer>
       </div>
     </div>
 
     <div>
-      <table class="table is-striped is-hoverable is-fullwidth is-vcentered">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>User Type</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      <b-table
+        :data="isEmpty ? [] : userList"
+        :striped="true"
+        :loading="isLoading"
+        :mobile-cards="true"
+      >
+        <b-table-column v-slot="props" field="id" label="ID" width="40" numeric>
+          {{ props.row.id }}
+        </b-table-column>
 
-        <tbody>
-          <tr v-for="user in userList" :key="user.id">
-            <td>{{ user.id }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.user_type }}</td>
-            <td>
-              <button class="button is-danger" @click="deleteUser(user.id)">
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <b-table-column v-slot="props" field="name" label="Name" width="40">
+          {{ props.row.name }}
+        </b-table-column>
+
+        <b-table-column v-slot="props" field="email" label="Email" width="40">
+          {{ props.row.email }}
+        </b-table-column>
+
+        <b-table-column
+          v-slot="props"
+          field="userType"
+          label="User Type"
+          width="40"
+        >
+          {{ props.row.user_type }}
+        </b-table-column>
+
+        <b-table-column
+          v-slot="props"
+          field="action"
+          label="Actions"
+          width="40"
+        >
+          <b-button
+            type="is-danger"
+            :loading="action"
+            @click="confirm(props.row.id)"
+          >
+            Delete
+          </b-button>
+        </b-table-column>
+      </b-table>
     </div>
   </div>
 </template>
@@ -100,6 +122,10 @@ export default {
       type: Array,
       required: true,
     },
+    state: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -108,15 +134,30 @@ export default {
       email: '',
       password: '',
       userType: '',
+      isEmpty: false,
+      actionLoading: false,
     }
   },
   computed: {
     errorMessage() {
       return this.$store.getters.error
     },
+    isLoading() {
+      return this.$props.state
+    },
+    action() {
+      return this.actionLoading
+    },
   },
   methods: {
+    confirm(id) {
+      this.$buefy.dialog.confirm({
+        message: 'Are you sure you want to delete this record?',
+        onConfirm: () => this.deleteUser(id),
+      })
+    },
     async deleteUser(id) {
+      this.actionLoading = true
       // delete from backend
       await axios.delete(`${process.env.baseUrl}/users/${id}`, {
         headers: {
@@ -125,6 +166,11 @@ export default {
         },
       })
       // emits an event to parent to delete it from the userList
+      this.actionLoading = false
+      this.$buefy.toast.open({
+        message: 'User Deleted',
+        type: 'is-danger',
+      })
       this.$emit('deleteUser', id)
     },
 
@@ -133,6 +179,7 @@ export default {
     },
 
     async createAccount() {
+      this.actionLoading = true
       const data = {
         name: this.name,
         email: this.email,
@@ -161,6 +208,11 @@ export default {
         .catch((e) => {
           this.$store.commit('setError', e.response.data.message)
         })
+      this.actionLoading = false
+      this.$buefy.toast.open({
+        message: 'User Created',
+        type: 'is-success',
+      })
     },
   },
 }

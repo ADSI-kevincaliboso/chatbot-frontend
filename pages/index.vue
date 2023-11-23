@@ -19,9 +19,9 @@
             <TextInput id="password" v-model="password" type="password" />
           </div>
 
-          <button class="button is-primary" type="submit">
+          <b-button native-type="submit" type="is-primary" :loading="isLoading">
             {{ isLogin ? 'Login' : 'Signup' }}
-          </button>
+          </b-button>
           <button
             class="button is-secondary"
             type="button"
@@ -53,7 +53,13 @@ export default {
       name: '',
       isLogin: true,
       error: '',
+      loading: false,
     }
+  },
+  computed: {
+    isLoading() {
+      return this.loading
+    },
   },
   methods: {
     authUser() {
@@ -64,10 +70,10 @@ export default {
         isLogin: this.isLogin,
       }
 
-      this.email = ''
-      this.name = ''
+      // this.email = ''
+      // this.name = ''
       this.password = ''
-
+      this.loading = true
       this.$store.dispatch('authUser', authData).then((res) => {
         if (!res) {
           this.$buefy.toast.open({
@@ -76,7 +82,9 @@ export default {
             position: 'is-bottom',
           })
           // this.error = this.$store.getters.error
+          this.loading = false
         } else {
+          this.loading = false
           this.$buefy.toast.open({
             message: 'Login Successful!',
             type: 'is-success',
