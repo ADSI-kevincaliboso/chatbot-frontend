@@ -4,40 +4,50 @@
     <h1 class="subtitle">Chatrooms</h1>
 
     <div>
-      <table class="table is-striped is-hoverable is-fullwidth is-vcentered">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Chatroom Name</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      <b-table
+        :data="isEmpty ? [] : chatrooms"
+        :striped="true"
+        :loading="isLoading"
+        :mobile-cards="true"
+      >
+        <b-table-column v-slot="props" field="id" label="ID" width="40" numeric>
+          {{ props.row.id }}
+        </b-table-column>
 
-        <tbody>
-          <tr v-for="chatroom in chatrooms" :key="chatroom.id">
-            <td>{{ chatroom.id }}</td>
-            <td>{{ chatroom.name }}</td>
-            <td>
-              <button
-                class="button is-light is-primary"
-                @click="enterRoom(chatroom.id)"
-              >
-                Enter Chatroom
-              </button>
+        <b-table-column
+          v-slot="props"
+          field="chatroomName"
+          label="Chatroom Name"
+          width="40"
+        >
+          {{ props.row.name }}
+        </b-table-column>
 
-              <div v-show="$store.getters.userType === 'admin'">
-                <ModeratorOptions v-model="moderator" />
-                <button
-                  class="button is-light is-secondary"
-                  @click="assignModerator(chatroom.id)"
-                >
-                  Assign Moderator
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <b-table-column
+          v-slot="props"
+          field="actions"
+          label="Actions"
+          width="40"
+        >
+          <b-button type="is-light is-primary" @click="enterRoom(props.row.id)">
+            Enter Chatroom
+          </b-button>
+
+          <div v-show="$store.getters.userType === 'admin'">
+            <ModeratorOptions v-model="moderator" />
+            <b-button
+              type="is-light is-secondary"
+              :loading="action"
+              @click="assignModerator(props.row.id)"
+            >
+              Assign Moderator
+            </b-button>
+          </div>
+        </b-table-column>
+        <template #empty>
+          <div class="has-text-centered">No records</div>
+        </template>
+      </b-table>
     </div>
   </div>
 </template>
@@ -56,11 +66,25 @@ export default {
       type: Array,
       required: true,
     },
+    state: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
       moderator: 0,
+      isEmpty: false,
+      actionLoading: false,
     }
+  },
+  computed: {
+    isLoading() {
+      return this.$props.state
+    },
+    action() {
+      return this.actionLoading
+    },
   },
   methods: {
     enterRoom(id) {
@@ -69,16 +93,11 @@ export default {
       // redirect admin to chatbot page
       this.$router.push('/chatbot')
     },
-    /**
-     * #TODO
-     */
     async assignModerator(roomId) {
+      this.actionLoading = true
       if (this.moderator === 0) {
         // remove the moderator from chatroom
       } else {
-        // assign the chatroom to the moderator
-        // use the store action too
-
         await axios.post(
           `${process.env.baseUrl}/chat-rooms/assign`,
           {
@@ -93,6 +112,11 @@ export default {
           }
         )
       }
+      this.actionLoading = false
+      this.$buefy.toast.open({
+        message: 'Moderator Assigned',
+        type: 'is-success',
+      })
     },
   },
 }

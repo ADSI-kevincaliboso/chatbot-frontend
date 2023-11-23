@@ -2,7 +2,7 @@
   <div>
     <button class="button is-secondary" @click="getChatRooms">ChatRooms</button>
     <button
-      v-show="this.$store.getters.userType === 'admin'"
+      v-show="$store.getters.userType === 'admin'"
       class="button is-secondary"
       @click="getUsers"
     >
@@ -10,10 +10,11 @@
     </button>
 
     <div>
-      <ChatRooms v-show="showChatRooms" :chatrooms="rooms" />
+      <ChatRooms v-show="showChatRooms" :chatrooms="rooms" :state="isLoading" />
       <UserTable
         v-show="showUserTable"
         :user-list="userList"
+        :state="isLoading"
         @deleteUser="deleteUser"
         @addUser="addUser"
       />
@@ -43,17 +44,21 @@ export default {
       users: [],
       showChatRooms: true,
       showUserTable: false,
+      loading: false,
     }
   },
   computed: {
     userList() {
       return this.users
     },
+    isLoading() {
+      return this.loading
+    },
   },
   methods: {
     async getChatRooms() {
       let res
-
+      this.loading = true
       if (this.$store.getters.userType === 'admin') {
         res = await axios.get(`${process.env.baseUrl}/chat-rooms/`, {
           headers: {
@@ -74,9 +79,11 @@ export default {
       this.$emit('chatroomRefresh', res.data)
       this.showChatRooms = true
       this.showUserTable = false
+      this.loading = false
     },
 
     async getUsers() {
+      this.loading = true
       const res = await axios.get(`${process.env.baseUrl}/users/`, {
         headers: {
           Accept: 'application/json',
@@ -87,6 +94,7 @@ export default {
       this.users = res.data.data
       this.showChatRooms = false
       this.showUserTable = true
+      this.loading = false
     },
 
     deleteUser($event) {
