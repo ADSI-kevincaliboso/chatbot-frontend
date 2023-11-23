@@ -1,25 +1,26 @@
 <template>
   <div>
     <TextAreaInput v-model="message" />
-    <button
+    <b-button
       v-show="
         $store.getters.chatbotDone == 1 || $store.getters.userType !== 'user'
       "
-      class="button is-success"
+      type="is-success"
+      :loading="isLoading"
       @click="sendMessage"
     >
       Send
-    </button>
+    </b-button>
 
-    <button
+    <b-button
       v-show="
         $store.getters.chatbotDone == 0 && $store.getters.userType === 'user'
       "
-      class="button is-success"
+      type="is-success"
       @click="sendBotMessage"
     >
       Send
-    </button>
+    </b-button>
   </div>
 </template>
 
@@ -44,11 +45,18 @@ export default {
   data() {
     return {
       message: '',
+      loading: false,
     }
+  },
+  computed: {
+    isLoading() {
+      return this.loading
+    },
   },
   methods: {
     async sendMessage() {
       // send message then emit a event that the message is sent
+      this.loading = true
       if (this.message) {
         const res = await axios
           .post(
@@ -76,6 +84,7 @@ export default {
 
         this.message = ''
         this.$emit('messageSent', res.data.data)
+        this.loading = false
       }
     },
 
